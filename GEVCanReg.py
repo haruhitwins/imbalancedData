@@ -6,6 +6,7 @@ Created on Sat Oct 17 17:32:40 2015
 """
 
 import numpy as np
+from Util import assure
 
 class GEVCanReg(object):
     def __init__(self, xi = -0.2567, iterations = 30, tolerance = 1e-8, regular = 1.):
@@ -56,12 +57,17 @@ class GEVCanReg(object):
         return self.eta
         
     def link(self, xi, eta):
-        return (1./np.power(-np.log(eta), xi)-1)/xi
+        assure((eta > 0).all(), "link input error.")
+        if xi == 0:
+            return -np.log(-np.log(eta))
+        return (1./np.power(-np.log(eta), xi) - 1) / xi
     
     def inverseLink(self, xi, v):
-        return np.exp(-1./(np.power((1+v*xi),1./xi)))
+        assure((1+v*xi >= 0).all(), "inverseLink input error.")
+        return np.exp(-np.power((1+v*xi), -1./xi))
     
     def derivLink(self, xi, eta):
+        assure((eta > 0).all(), "derivLink input error.")
         return 1./(eta*np.power(-np.log(eta), xi+1))
  
     def clip(self, xi, v):
@@ -82,40 +88,43 @@ class GEVCanReg(object):
         tmpY[Y != 1] = 0
         while t < self.iterations:
             #Caculate weight matrix
+            assure((self.eta > 0).all(), "eta value less than 0")
             w = self.eta*np.power(-np.log(self.eta), self.xi+1)
-            w[np.isnan(w)] = 1e-10
+            assure(not np.isnan(w).any(), "w error.")
+            #w[w < 1e-15] = 1e-15
             W = np.diag(w)
             
             #Z is used for updating beta
+            tmp = self.derivLink(self.xi, self.eta)
+            assure(not np.isnan(self.v).any(), "v error.")
+            np.savetxt("v.txt", self.v)
+            assure(not np.isnan(tmp).any(), "tmp error.")
+            np.savetxt("tmp.txt", tmp)
+            assure(not np.isnan(self.eta).any(), "eta error.")
+            np.savetxt("eta.txt", self.eta)
             Z = self.v + self.gamma \
-                        *self.derivLink(self.xi, self.eta) \
+                        *tmp \
                         *(tmpY - self.eta)
-            Z[np.isnan(Z)] = 1e-10
+            assure(not np.isnan(Z).any(), "Z error.")
             
             #Update beta
             mat = np.matrix(X.T.dot(W).dot(X)) \
                     + np.eye(X.shape[1])*self.regular
             self.beta = mat.I.dot(X.T).dot(W).dot(Z).getA1()
-            
+            assure(not np.isnan(self.beta).any(), "beta error.")
             #Calculate v
             self.v = X.dot(self.beta)
             self.clip(self.xi, self.v)
             
             #Judge if eta is convergent
             newEta = self.inverseLink(self.xi, self.v)
+            #newEta[newEta < 1e-15] = 1e-15
             if np.abs(newEta - self.eta).sum() < self.tol:
                 self.eta = newEta
                 break
             self.eta = newEta
             t += 1
-            #print t
-#==============================================================================
-#             print "w = ", w
-#             print "Z = ", Z
-#             print "mat = ", mat
-#             print "beta = ", self.beta
-#             print "eta = ", self.eta
-#==============================================================================
+        print "Total iterations: ", t
 
     def predict(self, X):
         self.v = X.dot(self.beta)
@@ -132,12 +141,12 @@ if __name__ == "__main__":
     print "link(data) = ", v
     print "inverseLink(link(data)) = ", reg.inverseLink(xi, v)
     
-    X = np.array([[1,2,3],
-                  [4,2,4],
-                  [3,3,3],
-                  [6,9,7],
-                  [7,8,9],
-                  [5,7,6]])
+    X = np.array([[1,2,3,3],
+                  [4,2,4,4],
+                  [3,3,3,5],
+                  [6,9,7,6],
+                  [7,8,9,7],
+                  [5,7,6,8]])
     Y = np.array([1,1,1,-1,-1,-1])
     reg.fit(X,Y)
     print "eta: ", reg.getResults()
