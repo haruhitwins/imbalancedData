@@ -8,10 +8,6 @@ Created on Sun Oct 18 11:22:35 2015
 import numpy as np
 from sklearn import cross_validation
 
-def assure(flag, comment):
-    if not flag:
-        raise Exception(comment)
-        
 def brierScore(preditY, trueY):
     y = trueY.copy()
     y[y != 1] = 0
