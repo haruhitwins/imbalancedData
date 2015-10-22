@@ -8,7 +8,7 @@ Created on Sat Oct 17 17:32:40 2015
 import numpy as np
 
 class GEVCanReg(object):
-    def __init__(self, xi = -0.2567, iterations = 30, tolerance = 1e-8, regular = 1.):
+    def __init__(self, xi = -0.2567, iterations = 50, tolerance = 1e-10, regular = 1.):
         self.xi = xi
         self.iterations = iterations
         self.tol = tolerance
@@ -19,8 +19,8 @@ class GEVCanReg(object):
         self._gamma = 1.
 
     def __str__(self):
-        return "GEVCanReg xi = %f iteraions = %d" \
-                % (self.xi, self.iterations)
+        return "GEVCanReg xi = %f, iteraions = %d, tolerance= % f, regular = %f" \
+                % (self.xi, self.iterations, self.tol, self.regular)
 
     def __repr__(self):
         return "GEV-Canonical Regression"
@@ -63,7 +63,10 @@ class GEVCanReg(object):
 
     def inverseLink(self, xi, v):
 #        assert (1+v*xi >= 0).all(), "inverseLink input error."
-        res = np.exp(-np.power((1+v*xi), -1./xi))
+        if xi == 0:
+            res = np.exp(-np.exp(-v))
+        else:
+            res = np.exp(-np.power((1+v*xi), -1./xi))
         if (res == 0).any() :
             maxValue = res.max()
             res[res == 0] = maxValue + 1
@@ -137,7 +140,7 @@ class GEVCanReg(object):
                 break
             self._eta = newEta
             t += 1
-        print "Total iterations: ", t
+        #print "Total iterations: ", t
 
     def predict(self, X):
         self._v = X.dot(self._beta)

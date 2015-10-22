@@ -9,8 +9,9 @@ import numpy as np
 from GEVCanReg import GEVCanReg
 import Util
 
-def main_with_validation():
-    data = np.loadtxt(fname="data/letter-A.data", delimiter=",")
+def main_with_validation(fileName):
+    data = np.loadtxt(fname=fileName, delimiter=",")
+    data = Util.standardization(data)
     n = data.shape[0]
 
     np.random.shuffle(data)
@@ -32,25 +33,27 @@ def main_with_validation():
 
     for xi in xis:
         clf.setXi(xi)
+        print "Current xi = ", xi
         score, reg = Util.crossValidate(clf, validateX, validateY, \
                                         Util.brierScore, 5, "Regular", regs)
         if score < bestScore:
             bestScore, bestXi, bestReg = score, xi, reg
             print "bestScore, bestXi, bestReg = ", score, xi, reg
-    print "bestReg, bestXi = ", bestReg, bestXi #0.001, -0.5
+    print "bestReg, bestXi = ", bestReg, bestXi
     clf.setRegular(bestReg)
     clf.setXi(bestXi)
     print "fitting training data"
     clf.fit(trainX, trainY)
     print "brierScore = ", Util.brierScore(clf.predict(testX), testY)
 
-def main():
-    data = np.loadtxt(fname="data/letter-A.data", delimiter=",")
+def main(fileName, reg, xi):
+    data = np.loadtxt(fname=fileName, delimiter=",")
+    #data = Util.standardization(data)
     n = data.shape[0]
     scoreList = []
     clf = GEVCanReg()
-    clf.setRegular(0.001)
-    clf.setXi(-0.5)
+    clf.setRegular(reg)
+    clf.setXi(xi)
     k = 10
     
     for _ in xrange(k):
@@ -68,4 +71,5 @@ def main():
     print "mean score = ", sum(scoreList)/k
     
 if __name__ == "__main__":
-    main()
+    #main_with_validation("data/letter-A.data")
+    main("data/letter-A.data",0.001,1.5)

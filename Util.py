@@ -7,6 +7,7 @@ Created on Sun Oct 18 11:22:35 2015
 
 import numpy as np
 from sklearn import cross_validation
+from sklearn import preprocessing
 
 def brierScore(preditY, trueY):
     y = trueY.copy()
@@ -32,6 +33,9 @@ def crossValidate(classifier, X, Y, evalFunc, k, name, params):
             bestParam = param
             #print "bestScore = ", score, "with param = ", param
     return (bestScore, bestParam)
-    
+
+def standardization(X):
+    return preprocessing.scale(X)
+
 if __name__ == "__main__":
     print "This is Util module."
