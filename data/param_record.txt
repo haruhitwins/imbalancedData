@@ -1,3 +1,0 @@
-data,bestReg,bestXi
-letter-A,0.001,-0.5
-vehicle,0.01,1.5

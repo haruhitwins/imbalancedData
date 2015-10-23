@@ -56,13 +56,13 @@ class GEVCanReg(object):
         return self._eta
 
     def link(self, xi, eta):
-#        assert (eta > 0).all(), "link input error."
+        assert (eta > 0).all(), "link input error."
         if xi == 0:
             return -np.log(-np.log(eta))
         return (1./np.power(-np.log(eta), xi) - 1) / xi
 
     def inverseLink(self, xi, v):
-#        assert (1+v*xi >= 0).all(), "inverseLink input error."
+        assert (1+v*xi >= 0).all(), "inverseLink input error."
         if xi == 0:
             res = np.exp(-np.exp(-v))
         else:
@@ -75,9 +75,10 @@ class GEVCanReg(object):
         return res
 
     def derivLink(self, xi, eta):
-#        assert (eta > 0).all(), "derivLink input error."
+        assert (eta > 0).all(), "derivLink input error."
         res = 1./(eta*np.power(-np.log(eta), xi+1))
         res[res == np.inf] = 1e10
+        res[res == -np.inf] = 1e-10
         return res
 
     def clip(self, xi, v):
@@ -98,43 +99,40 @@ class GEVCanReg(object):
         tmpY[Y != 1] = 0
         while t < self.iterations:
             #Caculate weight matrix
-#            np.savetxt("eta.txt", self._eta)
-#            assert (self._eta > 0).all(), "eta value less than 0"
+            assert (self._eta > 0).all(), "eta value less than 0"
             w = self._eta*np.power(-np.log(self._eta), self.xi+1)
-#            assert not np.isnan(w).any(), "w isnan error."
-#            assert not np.isinf(w).any(), "w ifinf error."
+            assert not np.isnan(w).any(), "w isnan error."
+            assert not np.isinf(w).any(), "w ifinf error."
             W = np.diag(w)
 
             #Z is used for updating beta
             tmp = self.derivLink(self.xi, self._eta)
-            #np.savetxt("tmp.txt", tmp)
-#            assert not np.isnan(tmp).any(), "tmp isnan error."
-#            assert not np.isinf(tmp).any(), "tmp isinf error."
+            assert not np.isnan(tmp).any(), "tmp isnan error."
+            assert not np.isinf(tmp).any(), "tmp isinf error."
 
             Z = self._v + self._gamma \
                         *tmp \
                         *(tmpY - self._eta)
-#            assert not np.isnan(Z).any(), "Z isnan error."
-#            assert not np.isinf(Z).any(), "Z isinf error."
+            assert not np.isnan(Z).any(), "Z isnan error."
+            assert not np.isinf(Z).any(), "Z isinf error."
 
             #Update beta
             mat = np.matrix(X.T.dot(W).dot(X)) \
                     + np.eye(X.shape[1])*self.regular
             self._beta = mat.I.dot(X.T).dot(W).dot(Z).getA1()
-#            assert not np.isnan(self._beta).any(), "beta isnan error."
-#            assert not np.isinf(self._beta).any(), "beta isinf error."
+            assert not np.isnan(self._beta).any(), "beta isnan error."
+            assert not np.isinf(self._beta).any(), "beta isinf error."
 
             #Calculate v
             self._v = X.dot(self._beta)
             self.clip(self.xi, self._v)
-#            np.savetxt("v.txt", self._v)
-#            assert not np.isnan(self._v).any(), "v isnan error."
-#            assert not np.isinf(self._v).any(), "v isinf error."
+            assert not np.isnan(self._v).any(), "v isnan error."
+            assert not np.isinf(self._v).any(), "v isinf error."
 
             #Judge if eta is convergent
             newEta = self.inverseLink(self.xi, self._v)
-#            assert not np.isnan(newEta).any(), "eta isnan error."
-#            assert not np.isinf(newEta).any(), "eta isinf error."
+            assert not np.isnan(newEta).any(), "eta isnan error."
+            assert not np.isinf(newEta).any(), "eta isinf error."
             if np.abs(newEta - self._eta).sum() < self.tol:
                 self._eta = newEta
                 break
