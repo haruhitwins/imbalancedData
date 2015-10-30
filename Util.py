@@ -43,8 +43,7 @@ def probToLabel(y, threshold = 0.5):
 def crossValidate(classifier, X, Y, evalFunc, k, name, params):
     kf = cross_validation.KFold(X.shape[0], n_folds = k)
     setFunc = classifier.__getattribute__("set" + name)
-    bestParam = None
-    bestScore = 1e10
+    bestScore, bestParam = 1e10, None
     
     for param in params:
         setFunc(param)
@@ -62,6 +61,40 @@ def crossValidate(classifier, X, Y, evalFunc, k, name, params):
 
 def standardization(X):
     return preprocessing.scale(X)
+    
+def readData(source, isValidate = False, preproc = False):
+    if type(source) == str:
+        data = np.loadtxt(fname=source, delimiter=",")
+    else:
+        data = source
+    n = data.shape[0]
 
+    np.random.shuffle(data)
+    train, test = data[:n * 0.7], data[n * 0.7:]
+    if isValidate:
+        validate = train[:n * 0.3]
+        validateX, validateY = validate[:, 1:], validate[:, 0].flatten()
+        validateY[validateY != 1] = 0
+    trainX, trainY = train[:, 1:], train[:, 0].flatten()
+    trainY[trainY != 1] = 0
+    testX, testY = test[:, 1:], test[:, 0].flatten()
+    testY[testY != 1] = 0
+
+    if preproc: 
+        trainX = standardization(trainX)
+        testX = standardization(testX)
+        if isValidate : 
+            validateX = standardization(validateX)
+    
+    if isValidate:
+        return validateX, validateY, trainX, trainY, testX, testY
+    else:
+        return trainX, trainY, testX, testY
+
+def calculateP(source):
+    data = np.loadtxt(fname=source, delimiter=",")
+    n = data.shape[0]
+    return (data[:, 0] == 1).sum() / float(n)
+        
 if __name__ == "__main__":
     print "This is Util module."
