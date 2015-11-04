@@ -71,14 +71,14 @@ def main_label(fileName, reg, xi, preproc=False, evalFunc = Util.f1):
     print "mean score = ", sum(scoreList)/k
     
 if __name__ == "__main__":
-    for name in ["vehicle", "german", "glass", "harberman", "pima", "letter-A"]:
-        for p in [False, True]:
-            for f in [Util.brierScore, Util.calibrationLoss]:
-                main_with_validation("data/"+name+".data", p, f)
-#    l = []    
-#    with open("log/GLS_validation_log.txt") as f:
-#        l = f.readlines()
-#    l = [s.strip().split(',') for s in l]
-#    for s in l:
-#        main_prob(s[1], float(s[2]), float(s[3]), s[4] == "True", Util.__dict__[s[5]])
+#    for name in ["vehicle", "german", "glass", "harberman", "pima", "letter-A"]:
+#        for p in [False, True]:
+#            for f in [Util.brierScore, Util.calibrationLoss]:
+#                main_with_validation("data/"+name+".data", p, f)
+    l = []    
+    with open("log/GLS_validation_log.txt") as f:
+        l = f.readlines()
+    l = [s.strip().split(',') for s in l]
+    for s in l:
+        main_prob(s[1], float(s[2]), float(s[3]), s[4] == "True", Util.__dict__[s[5]])
     #main_label("data/letter-A.data",0.001,-0.5,False,Util.recall)

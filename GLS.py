@@ -44,6 +44,9 @@ class GLS(object):
     def getBeta(self):
         return self._beta
 
+    def setBeta(self, beta):
+        self._beta = beta
+        
     def calculateL(self, xi):
         if xi < -1: raise Exception("No L exists when xi < -1")
         if xi == 0: return 1 / np.e

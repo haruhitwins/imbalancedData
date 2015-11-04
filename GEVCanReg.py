@@ -52,6 +52,9 @@ class GEVCanReg(object):
 
     def getBeta(self):
         return self._beta
+        
+    def setBeta(self, beta):
+        self._beta = beta
 
     def getResults(self):
         return self._eta
@@ -114,15 +117,9 @@ class GEVCanReg(object):
         return GEVFunc.inverseLink2(self.xi, self._v)
 
 if __name__ == "__main__":
-    reg = GEVCanReg()
-    print reg
+    reg = GEVCanReg()    
     xi = 0.5
-    test = np.array([.1,.1,.1])
-    v = reg.link(xi, test)
-    print "data = ", test
-    print "link(data) = ", v
-    print "inverseLink(link(data)) = ", reg.inverseLink2(xi, v)
-
+    print reg
     X = np.array([[1,2,3,3],
                   [4,2,4,4],
                   [3,3,3,5],
@@ -131,5 +128,6 @@ if __name__ == "__main__":
                   [5,7,6,8]])
     Y = np.array([1,1,1,-1,-1,-1])
     reg.fit(X,Y)
+    print "beta: ", reg.getBeta()
     print "eta: ", reg.getResults()
     print "predict: ", reg.predict(X)
