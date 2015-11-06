@@ -10,7 +10,7 @@ import Util
 import GEVFunc
 
 class GLS(object):
-    def __init__(self, xi=-0.2567, reg=1., iterations=100, tolerance=1e-5):
+    def __init__(self, xi=-0.2567, reg=0., iterations=100, tolerance=1e-5):
         self.xi = xi
         self.reg = reg
         self.iterations = iterations
