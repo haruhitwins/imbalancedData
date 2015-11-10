@@ -9,11 +9,11 @@ import numpy as np
 import GEVFunc
 
 class GEVCanReg(object):
-    def __init__(self, xi=-0.2567, regular=1., iterations=50, tolerance=1e-10):
+    def __init__(self, xi=-0.2567, reg=0., iterations=50, tolerance=1e-10):
         self.xi = xi
         self.iterations = iterations
         self.tol = tolerance
-        self.regular = regular
+        self.regular = reg
         self._eta = None
         self._beta = None
         self._v = None
@@ -70,40 +70,23 @@ class GEVCanReg(object):
         t = 0
         while t < self.iterations:
             #Caculate weight matrix
-            assert (self._eta > 0).all(), "eta value less than 0"
             w = self._eta*np.power(-np.log(self._eta), xi+1)
-            assert not np.isnan(w).any(), "w isnan error."
-            assert not np.isinf(w).any(), "w ifinf error."
             W = np.diag(w)
-
             #Z is used for updating beta
             tmp = GEVFunc.derivLink(xi, self._eta)
-            assert not np.isnan(tmp).any(), "tmp isnan error."
-            assert not np.isinf(tmp).any(), "tmp isinf error."
-
             Z = self._v + self._gamma \
                         *tmp \
                         *(Y - self._eta)
-            assert not np.isnan(Z).any(), "Z isnan error."
-            assert not np.isinf(Z).any(), "Z isinf error."
-
             #Update beta
             mat = np.matrix(X.T.dot(W).dot(X)) \
                     + np.eye(X.shape[1])*self.regular
-            self._beta = mat.I.dot(X.T).dot(W).dot(Z).getA1()
-            assert not np.isnan(self._beta).any(), "beta isnan error."
-            assert not np.isinf(self._beta).any(), "beta isinf error."
-
+            #self._beta = mat.I.dot(X.T).dot(W).dot(Z).getA1()
+            self._beta = np.linalg.pinv(mat).dot(X.T).dot(W).dot(Z).getA1()
             #Calculate v
             self._v = X.dot(self._beta)
             GEVFunc.clip(xi, self._v)
-            assert not np.isnan(self._v).any(), "v isnan error."
-            assert not np.isinf(self._v).any(), "v isinf error."
-
             #Judge if eta is convergent
             newEta = GEVFunc.inverseLink2(xi, self._v)
-            assert not np.isnan(newEta).any(), "eta isnan error."
-            assert not np.isinf(newEta).any(), "eta isinf error."
             if np.abs(newEta - self._eta).sum() < self.tol:
                 self._eta = newEta
                 break

@@ -11,6 +11,7 @@ from sklearn import preprocessing
 from sklearn.metrics import recall_score
 from sklearn.metrics import precision_score
 from sklearn.metrics import f1_score
+from sklearn.metrics import roc_auc_score
 
 def brierScore(predictY, trueY):
     y = trueY.copy()
@@ -35,20 +36,23 @@ def precision(predictY, trueY):
 def f1(predictY, trueY):
     return f1_score(trueY, predictY)
 
+def auc(predictY, trueY):
+    return roc_auc_score(trueY, predictY)
+
 def probToLabel(y, threshold = 0.5):
     res = np.zeros(len(y))
     res[y >= threshold] = 1
     return res
     
 def crossValidate(classifier, X, Y, evalFunc, k, name, params):
-    kf = cross_validation.KFold(X.shape[0], n_folds = k)
+    skf = cross_validation.StratifiedKFold(Y, n_folds = k)
     setFunc = classifier.__getattribute__("set" + name)
     bestScore, bestParam = 1e10, None
     
     for param in params:
         setFunc(param)
         scores = []
-        for train_id, test_id in kf:
+        for train_id, test_id in skf:
             classifier.fit(X[train_id], Y[train_id])
             predictY = classifier.predict(X[test_id])
             scores.append(evalFunc(predictY, Y[test_id]))
@@ -62,34 +66,37 @@ def crossValidate(classifier, X, Y, evalFunc, k, name, params):
 def standardization(X):
     return preprocessing.scale(X)
     
-def readData(source, isValidate = False, preproc = False):
+def readData(source, preproc=False, intercept=False, testSize=0.3):
     if type(source) == str:
         data = np.loadtxt(fname=source, delimiter=",")
     else:
         data = source
-    n = data.shape[0]
-
-    np.random.shuffle(data)
-    train, test = data[:n * 0.7], data[n * 0.7:]
-    if isValidate:
-        validate = train[:n * 0.3]
-        validateX, validateY = validate[:, 1:], validate[:, 0].flatten()
-        validateY[validateY != 1] = 0
-    trainX, trainY = train[:, 1:], train[:, 0].flatten()
-    trainY[trainY != 1] = 0
-    testX, testY = test[:, 1:], test[:, 0].flatten()
-    testY[testY != 1] = 0
+    y = data[:, 0]
+    pos = data[y == 1, :]
+    neg = data[y != 1, :]
+    neg[:, 0] = 0
+    del y, data
+    
+    pn, nn = pos.shape[0], neg.shape[0]
+    np.random.shuffle(pos)
+    np.random.shuffle(neg)
+    test = np.vstack((pos[:pn * testSize], neg[:nn * testSize]))
+    train = np.vstack((pos[pn * testSize:], neg[nn * testSize:]))
+    del pos, neg
+    
+    trainX, trainY = train[:, 1:], train[:, 0]
+    testX, testY = test[:, 1:], test[:, 0]
 
     if preproc: 
         trainX = standardization(trainX)
         testX = standardization(testX)
-        if isValidate : 
-            validateX = standardization(validateX)
-    
-    if isValidate:
-        return validateX, validateY, trainX, trainY, testX, testY
-    else:
-        return trainX, trainY, testX, testY
+
+    if intercept:
+        n = trainX.shape[0]
+        trainX = np.hstack((trainX, np.ones(n).reshape(n, 1)))
+        n = testX.shape[0]
+        testX = np.hstack((testX, np.ones(n).reshape(n, 1)))
+    return trainX, trainY, testX, testY
 
 def calculateP(source):
     data = np.loadtxt(fname=source, delimiter=",")

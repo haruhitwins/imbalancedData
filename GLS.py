@@ -10,7 +10,7 @@ import Util
 import GEVFunc
 
 class GLS(object):
-    def __init__(self, xi=-0.2567, reg=0., iterations=100, tolerance=1e-5):
+    def __init__(self, xi=-0.2567, reg=0., iterations=100, tolerance=1e-8):
         self.xi = xi
         self.reg = reg
         self.iterations = iterations
@@ -59,7 +59,8 @@ class GLS(object):
         Y = Y.reshape(-1, 1) 
         xi = self.xi
         L = self.calculateL(xi)
-        secOrd = np.matrix((X.T.dot(X) * L + self.reg * np.eye(d)) / n).I
+        #secOrd = np.matrix((X.T.dot(X) * L + self.reg * np.eye(d)) / n).I
+        secOrd = np.linalg.pinv((X.T.dot(X) * L + self.reg * np.eye(d)) / n)
         self._beta = np.zeros(d).reshape(-1, 1)
         
         t = 0
@@ -70,10 +71,9 @@ class GLS(object):
             firOrd = (X.T.dot(Y_hat - Y) + self.reg * self._beta) / n     
             newBeta = self._beta - secOrd.dot(firOrd)
             error = np.abs(newBeta - self._beta).sum()
-#            if t > self.iterations - 30:
-#                print error
             if error < self.tol:
                 self._beta = newBeta
+                #print "BREAK!!!!, t = ", t
                 break
             self._beta = newBeta
             t += 1
