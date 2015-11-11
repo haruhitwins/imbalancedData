@@ -1,0 +1,17 @@
+1. See how xi changes if data IR changes. 
+Use k-fold cv to find the best xi. Use some balanced data sets to get different degree of rarity (IR).
+Seems the best xi not just depends on the IR but also on the data. That's suck...now it's hard to get empirical rule.
+2. Figure out whether we can find out the best xi by some algs, like gene-alg? 
+It's hopeless to use derivative method...cause we can't get the primitive function of the link, and so we can't get the loss function. No way to derivative.
+3. Does HighDimAlg work? 
+At least ordinal scheme doesn't work. Random scheme may be promising, but seems not better than pure GLS.
+4. How does the whole procesure look like? 
+We use GLS to get fine-tune parameters (xi, reg) and then use HDA? Or we directly use HDA to get the best fitting?
+5. However, in the first place, does GLS work for imbalanced data? 
+The link function's asymmetry is true but what about the loss? The combination of them can really handle imbalanced data?
+6. Is there any other ways to do the Gen() process in HDA rather than just random sample? 
+Must be fast, not much calculation. What is Fourier Random Feature?
+7. How do the parameters (patchSize, kTimes) affect the result in HDA? 
+Larger is better?
+8. Compare to normal classification algs such as LogisticRegression and RandomForest.
+9. Compare to other techniques for imbalanced data such as down-sizing, oversampling and other methods.
