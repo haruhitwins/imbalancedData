@@ -66,7 +66,7 @@ def crossValidate(classifier, X, Y, evalFunc, k, name, params):
 def standardization(X):
     return preprocessing.scale(X)
     
-def readData(source, preproc=False, intercept=False, testSize=0.3):
+def readData(source, preproc=False, intercept=True, testSize=0.3):
     if type(source) == str:
         data = np.loadtxt(fname=source, delimiter=",")
     else:
