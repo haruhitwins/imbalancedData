@@ -37,6 +37,12 @@ class HighDimAlg(object):
         
     def setkTimes(self, k):
         self.k = k
+    
+    def setXi(self, xi):
+        self.clf.setXi(xi)
+        
+    def setRegular(self, reg):
+        self.clf.setRegular(reg)
         
     def generateFeatures(self, X):
         d = X.shape[1]
