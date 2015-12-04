@@ -6,7 +6,8 @@ Created on Tue Dec 22 15:59:29 2015
 """
 
 import numpy as np
-import GEVFunc
+import GEVFunc, Util, Sampling
+import matplotlib.pyplot as plt
 
 class JointDist(object):
     def __init__(self, X, targets):
@@ -37,10 +38,28 @@ class JointDist(object):
                np.log(np.power(self.sigmaXi, -0.5)) - 1./(2*self.sigmaXi)*xi*xi
 
 
-X = np.array([1,0,1,1]).reshape(2,2)        
-targets = np.array([0, 1])
-beta = np.array([1,1])
-xi = 1.
-z = np.ones(3)
-jd = JointDist(X, targets)
-print jd.logpdf(z)
+trainX, trainY, testX, testY = Util.readData("data/harberman.data")
+D = trainX.shape[1]
+jd = JointDist(trainX, trainY)
+# shape (1, D)
+sigmaBeta = np.random.rand(D)
+# scala
+sigmaXi = np.random.rand()
+Q = []
+for i in xrange(50):
+    jd.setSigmaBeta(sigmaBeta)
+    jd.setSigmaXi(sigmaXi)
+#    beta = np.random.multivariate_normal([0.]*D, np.diag(sigmaBeta))
+#    xi = np.array([sigmaXi * np.random.randn()])
+#    init = np.concatenate((beta, xi))
+    init = np.random.randn(D+1)
+    samples = Sampling.MH_Sampling(init, jd.logpdf, 5000, np.diag(np.random.rand(D+1)))#5*np.eye(D+1))
+    samples = samples[1000:]
+    sigma = (samples**2).sum(axis=0)/float(samples.shape[0])
+    sigmaBeta, sigmaXi = sigma[:-1], sigma[-1]    
+    q = np.mean([jd.logpdf(s) for s in samples])
+    print "Q = ", q
+    Q.append(q)
+        
+plt.plot(Q)
+plt.show()    
