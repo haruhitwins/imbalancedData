@@ -18,7 +18,7 @@ def inverseLink(xi, v):
     if xi == 0:
         res = np.exp(-np.exp(-v))
     else:
-        res = np.exp(-np.power((1+v*xi), -1./xi))
+        res = np.exp(-np.power(1+v*xi, -1./xi))
     return res
 
 def inverseLink2(xi, v):

@@ -10,12 +10,13 @@ import Util
 import GEVFunc
 
 class GLS(object):
-    def __init__(self, xi=-0.2567, reg=0., iterations=100, tolerance=1e-8):
+    def __init__(self, xi=-0.2567, reg=0., iterations=300, tolerance=1e-10):
         self.xi = xi
         self.reg = reg
         self.iterations = iterations
         self.tol = tolerance
         self._beta = None
+        self.step = 1.0
 
     def getXi(self):
         return self.xi
@@ -59,26 +60,28 @@ class GLS(object):
         Y = Y.reshape(-1, 1) 
         xi = self.xi
         L = self.calculateL(xi)
-        #secOrd = np.matrix((X.T.dot(X) * L + self.reg * np.eye(d)) / n).I
-        secOrd = np.linalg.pinv((X.T.dot(X) * L + self.reg * np.eye(d)) / n)
+        #secOrd = np.linalg.pinv((X.T.dot(X) * L + self.reg * np.eye(d)) / n)
+        secOrd = np.linalg.pinv(X.T.dot(X) * L / n + self.reg * np.eye(d))
         self._beta = np.zeros(d).reshape(-1, 1)
+        #self._beta = np.random.rand(d).reshape(-1, 1)
         
-        t = 0
+        t = 1.
         while t < self.iterations:
             v = X.dot(self._beta)
             GEVFunc.clip(self.xi, v)
             Y_hat = GEVFunc.inverseLink(xi, v)
-            firOrd = (X.T.dot(Y_hat - Y) + self.reg * self._beta) / n     
-            newBeta = self._beta - secOrd.dot(firOrd)
+            #firOrd = (X.T.dot(Y_hat - Y) + self.reg * self._beta) / n     
+            firOrd = X.T.dot(Y_hat - Y) / n + self.reg * self._beta
+            newBeta = self._beta - self.step * secOrd.dot(firOrd)
             error = np.abs(newBeta - self._beta).sum()
             if error < self.tol:
                 self._beta = newBeta
                 #print "BREAK!!!!, t = ", t
-                break
+                break            
             self._beta = newBeta
             t += 1
         self._beta = np.array(self._beta).flatten()
-#        print "Iteraions: ", t
+        #print "Iteraions: ", t
     
     def predict(self, X):
         v = X.dot(self._beta)

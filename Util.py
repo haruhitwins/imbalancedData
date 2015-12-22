@@ -12,6 +12,7 @@ from sklearn.metrics import recall_score
 from sklearn.metrics import precision_score
 from sklearn.metrics import f1_score
 from sklearn.metrics import roc_auc_score
+from sklearn.metrics import accuracy_score
 
 def brierScore(predictY, trueY):
     y = trueY.copy()
@@ -38,7 +39,20 @@ def f1(predictY, trueY):
 
 def auc(predictY, trueY):
     return roc_auc_score(trueY, predictY)
+ 
+def accuracy(predictY, trueY):
+    return accuracy_score(trueY, predictY)
 
+def evaluate(predY, testY):
+    b = brierScore(predY, testY)
+    c = calibrationLoss(predY, testY)
+    a = auc(predY, testY)
+    predY = probToLabel(predY)
+    r = recall(predY, testY)
+    p = precision(predY, testY)
+    f = f1(predY, testY)
+    return b,c,a,r,p,f
+    
 def probToLabel(y, threshold = 0.5):
     res = np.zeros(len(y))
     res[y >= threshold] = 1
@@ -55,8 +69,13 @@ def crossValidate(classifier, X, Y, evalFunc, k, name, params):
         for train_id, test_id in skf:
             classifier.fit(X[train_id], Y[train_id])
             predictY = classifier.predict(X[test_id])
-            scores.append(evalFunc(predictY, Y[test_id]))
-        score = sum(scores)/k
+#            if not (evalFunc == brierScore or evalFunc == calibrationLoss):
+#                predictY = probToLabel(predictY)
+            try:
+                scores.append(evalFunc(predictY, Y[test_id]))
+            except:
+                continue
+        score = np.array(scores).mean()
         if score < bestScore:
             bestScore = score
             bestParam = param
@@ -102,6 +121,14 @@ def calculateP(source):
     data = np.loadtxt(fname=source, delimiter=",")
     n = data.shape[0]
     return (data[:, 0] == 1).sum() / float(n)
-        
+
+def oneVsAll(X, clfs):
+    predYs = np.zeros(len(clfs) * X.shape[0]).reshape(len(clfs), X.shape[0])
+    for i, clf in enumerate(clfs):
+        predYs[i] = clf.predict(X)
+    return predYs.argmax(0)
+
+
+       
 if __name__ == "__main__":
     print "This is Util module."
