@@ -61,16 +61,21 @@ class GLS(object):
         xi = self.xi
         L = self.calculateL(xi)
         #secOrd = np.linalg.pinv((X.T.dot(X) * L + self.reg * np.eye(d)) / n)
+#        I = np.eye(d)
+#        I[-1, -1] = 0 #Not regularize the intercept
         secOrd = np.linalg.pinv(X.T.dot(X) * L / n + self.reg * np.eye(d))
+#        if not type(self._beta) is np.ndarray:
         self._beta = np.zeros(d).reshape(-1, 1)
-        #self._beta = np.random.rand(d).reshape(-1, 1)
+        self._beta[-1] = np.log(-np.log(Y.mean()))
         
-        t = 1.
+        t = 0.
         while t < self.iterations:
             v = X.dot(self._beta)
             GEVFunc.clip(self.xi, v)
             Y_hat = GEVFunc.inverseLink(xi, v)
-            #firOrd = (X.T.dot(Y_hat - Y) + self.reg * self._beta) / n     
+            #firOrd = (X.T.dot(Y_hat - Y) + self.reg * self._beta) / n  
+#            tmp = self.reg * self._beta
+#            tmp[-1] = 0
             firOrd = X.T.dot(Y_hat - Y) / n + self.reg * self._beta
             newBeta = self._beta - self.step * secOrd.dot(firOrd)
             error = np.abs(newBeta - self._beta).sum()
@@ -81,7 +86,6 @@ class GLS(object):
             self._beta = newBeta
             t += 1
         self._beta = np.array(self._beta).flatten()
-        #print "Iteraions: ", t
     
     def predict(self, X):
         v = X.dot(self._beta)
@@ -89,28 +93,24 @@ class GLS(object):
         return GEVFunc.inverseLink(self.xi, v)
 
 if __name__ == "__main__": 
-    fileName = "data/german.data"
-    preproc = False
-    evalFunc = Util.brierScore
-    
-#    validateX, validateY, \
-#    trainX, trainY, \
-#    testX, testY = Util.readData(fileName, True, preproc)
-    clf = GLS()
-#    xis = np.linspace(-1., 1.5, 26)
-#    bestScore, bestXi = 1e10, None
-#    score, xi = Util.crossValidate(clf, validateX, validateY, \
-#                                        evalFunc, 5, "Xi", xis)
-#    print "bestScore = ", score, "bestXi = ", xi
-    xi = -0.5
-    clf.setXi(xi)
-    k = 10
-    scoreList = []
-    data = np.loadtxt(fname=fileName, delimiter=",")
-    for _ in xrange(k):
-        trainX, trainY, testX, testY = Util.readData(data, preproc=preproc)
+    regs = np.logspace(-4, 4, 10)
+    xis = np.linspace(-1, 2, 31)    
+    scores = np.zeros(100).reshape(10,10)
+
+    for i in xrange(10):
+        trainX, trainY, testX, testY = Util.readData("data/harberman.data")
+        clf = GLS()
+        bestScore, bestXi, bestReg = 1e10, None, None
+        for xi in xis:
+            clf.setXi(xi)
+            score, reg = Util.crossValidate(clf, trainX, trainY, \
+                                            Util.brierScore, 5, "Regular", regs)
+            if score < bestScore:
+                bestScore, bestXi, bestReg = score, xi, reg
+        print "bestScore, bestXi, bestReg = ", bestScore, bestXi, bestReg
+        clf.setXi(bestXi)
+        clf.setRegular(bestReg)
         clf.fit(trainX, trainY)
-        s = evalFunc(clf.predict(testX), testY)
-        print "score = ", s
-        scoreList.append(s)
-    print "mean score = ", sum(scoreList)/k
+        scores[i] = Util.evaluate(clf.predict(testX).flatten(), testY)
+    
+    print scores.mean(axis=0)

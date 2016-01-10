@@ -8,16 +8,26 @@ Created on Sun Oct 18 11:22:35 2015
 import numpy as np
 from sklearn import cross_validation
 from sklearn import preprocessing
+from sklearn.metrics import brier_score_loss
 from sklearn.metrics import recall_score
 from sklearn.metrics import precision_score
 from sklearn.metrics import f1_score
 from sklearn.metrics import roc_auc_score
 from sklearn.metrics import accuracy_score
+from sklearn.metrics import matthews_corrcoef
+from sklearn.metrics import confusion_matrix
 
 def brierScore(predictY, trueY):
+#    y = trueY.copy()
+#    y[y != 1] = 0
+#    return np.square(predictY - y).mean()
+    return brier_score_loss(trueY, predictY)
+
+def stratifiedBrierScore(predictY, trueY):
     y = trueY.copy()
     y[y != 1] = 0
-    return np.square(predictY - y).mean()
+    pos, neg = y == 1, y == 0
+    return np.square(predictY[pos] - y[pos]).mean(), np.square(predictY[neg] - y[neg]).mean()
     
 def calibrationLoss(predictY, trueY):
     y = trueY.copy()
@@ -39,19 +49,29 @@ def f1(predictY, trueY):
 
 def auc(predictY, trueY):
     return roc_auc_score(trueY, predictY)
- 
+
+def matthews(predictY, trueY):
+    return matthews_corrcoef(trueY, predictY)    
+
+def gmean(predictY, trueY):
+    cm = confusion_matrix(trueY, predictY).astype(float)
+    return np.sqrt(cm[0,0] / (cm[0,0] + cm[0,1]) * cm[1,1] / (cm[1,1] + cm[1,0]))
+    
 def accuracy(predictY, trueY):
     return accuracy_score(trueY, predictY)
 
 def evaluate(predY, testY):
     b = brierScore(predY, testY)
+    b1, b0 = stratifiedBrierScore(predY, testY)
     c = calibrationLoss(predY, testY)
     a = auc(predY, testY)
     predY = probToLabel(predY)
     r = recall(predY, testY)
     p = precision(predY, testY)
     f = f1(predY, testY)
-    return b,c,a,r,p,f
+    m = matthews(predY, testY)
+    g = gmean(predY, testY)
+    return b, b1, b0, c, a, r, p, f, m, g
     
 def probToLabel(y, threshold = 0.5):
     res = np.zeros(len(y))
@@ -97,6 +117,8 @@ def readData(source, preproc=False, intercept=True, testSize=0.3):
     del y, data
     
     pn, nn = pos.shape[0], neg.shape[0]
+    if testSize != 0:
+        assert nn * testSize >= 1
     np.random.shuffle(pos)
     np.random.shuffle(neg)
     test = np.vstack((pos[:pn * testSize], neg[:nn * testSize]))

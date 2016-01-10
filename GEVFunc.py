@@ -7,6 +7,14 @@ Created on Thu Oct 29 14:47:26 2015
 
 import numpy as np
 
+def logGEV(xi, v):
+    assert (1+v*xi >= 0).all(), "logGEV input error."
+    if xi == 0:
+        res = -np.exp(-v)
+    else:
+        res = -np.power(1+v*xi, -1./xi)
+    return res
+
 def link(xi, eta):
     assert (eta > 0).all(), "link input error."
     if xi == 0:
@@ -20,6 +28,9 @@ def inverseLink(xi, v):
     else:
         res = np.exp(-np.power(1+v*xi, -1./xi))
     return res
+
+def GEV(xi, v):
+    return inverseLink(xi, v)
 
 def inverseLink2(xi, v):
     assert (1+v*xi >= 0).all(), "inverseLink input error."
@@ -50,6 +61,6 @@ def derivInverseLink(xi, v):
 
 def clip(xi, v):
     if xi > 0:
-        v[v < -1./xi] = -1./xi
+        v[v < -1./xi] = -1./xi + 1e-8
     elif xi < 0:
-        v[v > -1./xi] = -1./xi
+        v[v > -1./xi] = -1./xi - 1e-8
