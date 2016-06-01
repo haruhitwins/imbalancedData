@@ -1,0 +1,14 @@
+wisconsin
+glass0
+haberman
+segment0
+ecoli-0-3-4_vs_5
+yeast-0-3-5-9_vs_7-8
+led7digit-0-2-4-5-6-7-8-9_vs_1
+page-blocks-1-3_vs_4
+flare-F
+car-good
+kr-vs-k-three_vs_eleven
+winequality-red-8_vs_6
+poker-8_vs_6
+abalone19

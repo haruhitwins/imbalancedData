@@ -36,7 +36,7 @@ def proportionProb(w):
         if n <= summation:
             return i
         i += 1
-    print "Never reach here"
+    print("Never reach here")
     return k
 
 def MTMI_Sampling(init, pdf, k, iters, burnin, Mstep, sigma):
@@ -51,8 +51,8 @@ def MTMI_Sampling(init, pdf, k, iters, burnin, Mstep, sigma):
     w = np.zeros(k)
     state = init
     acceptance = 0
-    for i in xrange(iters):
-        for j in xrange(k):
+    for i in range(iters):
+        for j in range(k):
             y[j] = np.random.multivariate_normal(np.zeros(D), sigma)
             w[j] = pdf(y[j]) / helperGaussian(y[j], sigma)
             assert not np.isnan(w[j]) and not np.isinf(w[j])
@@ -81,7 +81,7 @@ def MH_Sampling(init, log_pdf, iters, burnin, Mstep, sigma):
     acceptance = 0
     #i = 0
     #total = 0
-    for i in xrange(iters):
+    for i in range(iters):
     #while i < iters:
         #total += 1
         prop = np.random.multivariate_normal(state, sigma)
@@ -115,11 +115,11 @@ def steppingOut(f, x, y, w, m):
         k -= 1
     return (L, R)
     
-def shrinkage(f, x, y, (L, R)):
+def shrinkage(f, x, y, tupleLR):
     """
     Used in slice sampling to shrink the range and draw a sample.
     """
-    l, r = L, R
+    l, r = tupleLR[0], tupleLR[1]
     while 1:
         u = np.random.rand()
         sample = l + u * (r - l)
@@ -137,7 +137,7 @@ def Slice_Sampling(x, pdf, iters, w, m):
     Maybe the pdf can be changed to logpdf for better precision.
     """
     samples = np.zeros(iters)
-    for i in xrange(iters):
+    for i in range(iters):
         y = np.random.rand() * pdf(x)
         (L, R) = steppingOut(pdf, x, y, w, m)
         s = shrinkage(pdf, x, y, (L, R))
@@ -168,11 +168,11 @@ def steppingOut_multi(pdf, z, index, y, w, m):
         k -= 1
     return (L, R)
 
-def shrinkage_multi(pdf, z, index, y, (L, R)):
+def shrinkage_multi(pdf, z, index, y, tupleLR):
     """
     Multidimension version of shrinkage.
     """
-    l, r = L, R
+    l, r = tupleLR[0], tupleLR[1]
     tmp = z.copy()
     while 1:
         u = np.random.rand()
@@ -194,8 +194,8 @@ def Slice_Sampling_Multi(init, pdf, iters, w, m):
     D = init.size
     state = init
     samples = np.zeros((iters, D))
-    for i in xrange(iters):
-        for j in xrange(D):
+    for i in range(iters):
+        for j in range(D):
             y = np.random.rand() * pdf(state)
             (L, R) = steppingOut_multi(pdf, state, j, y, w, m)
             s = shrinkage_multi(pdf, state, j, y, (L, R))
@@ -218,8 +218,8 @@ def Gibbs_Sampling(init, logpdf, iters, scala):
     samples = np.zeros((iters, d))
     state = init
     acc = 0.
-    for i in xrange(iters):
-        for j in xrange(d):
+    for i in range(iters):
+        for j in range(d):
             samples[i, j] = MHStep(logpdf, j, state, scala)
             if samples[i, j] != state[j]:
                 acc += 1
@@ -230,7 +230,7 @@ if __name__ == "__main__":
     init = np.array([np.random.rand()])
     #s, acc = MH_Sampling(init, log_pdf, 10000, 1000, 5, np.eye(1))
     s, acc = Gibbs_Sampling(init, log_pdf, 10000, np.eye(1))
-    print acc
+    print(acc)
 #    s = Slice_Sampling(np.random.rand(), pdf, 3000, 0.1, 10)
     n, bins, patches = plt.hist(s, 50, normed=1, facecolor='g', alpha=0.75)
     plt.axis([-1, 5, 0, 1])

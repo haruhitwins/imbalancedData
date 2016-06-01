@@ -102,7 +102,7 @@ class GEVCanReg(object):
 if __name__ == "__main__":
     reg = GEVCanReg()    
     xi = 0.5
-    print reg
+    print(reg)
     X = np.array([[1,2,3,3],
                   [4,2,4,4],
                   [3,3,3,5],
@@ -111,6 +111,6 @@ if __name__ == "__main__":
                   [5,7,6,8]])
     Y = np.array([1,1,1,-1,-1,-1])
     reg.fit(X,Y)
-    print "beta: ", reg.getBeta()
-    print "eta: ", reg.getResults()
-    print "predict: ", reg.predict(X)
+    print("beta: ", reg.getBeta())
+    print("eta: ", reg.getResults())
+    print("predict: ", reg.predict(X))

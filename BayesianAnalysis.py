@@ -63,7 +63,7 @@ if __name__ == "__main__":
     sigmaBeta = np.random.rand(D)
     sigmaXi = np.random.rand()
     miuXi = np.random.randn()
-    print "miuXi = ", miuXi
+    print("miuXi = ", miuXi)
     Q = []
     #sigmaXis = []
     miuXis = []
@@ -78,7 +78,7 @@ if __name__ == "__main__":
     iters = 1
     m = np.linspace(5000, 10000, iters)
     scala = 1e-4 #0.0001
-    for i in xrange(iters):
+    for i in range(iters):
         jd.setSigmaBeta(sigmaBeta)
         #jd.setSigmaXi(sigmaXi)
         jd.setMiuXi(miuXi)
@@ -89,7 +89,7 @@ if __name__ == "__main__":
         samples, acceptRate = Sampling.Gibbs_Sampling(init, jd.logpdf_miuXi, 50000, scala)
         #samples, acceptRate = Sampling.MTMI_Sampling(init, jd.pdf, 5, int(m[i]), int(m[i]*0.1), 20, qsigma)
         
-        print "Accept rate: ", acceptRate
+        print("Accept rate: ", acceptRate)
         if acceptRate < 0.15:
             scala /= 2
             
@@ -121,9 +121,9 @@ if __name__ == "__main__":
         predY += GEVFunc.inverseLink(xi, v)
     predY /= samples.shape[0]
     predY = predY.flatten()
-    print "b = %f b1 = %f b0 = %f c = %f a = %f r = %f p = %f f = %f m = %f g = %f" % Util.evaluate(predY, testY)
+    print("b = %f b1 = %f b0 = %f c = %f a = %f r = %f p = %f f = %f m = %f g = %f" % Util.evaluate(predY, testY))
     
     plt.plot(samples[:, -1].flatten())
     plt.show()
-    print samples.mean(axis=0)[-1]
+    print(samples.mean(axis=0)[-1])
     

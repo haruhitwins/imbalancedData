@@ -20,12 +20,12 @@ def main_with_validation(fileName, intercept=False, evalFunc = Util.brierScore):
 
     for xi in xis:
         clf.setXi(xi)
-        print "Current xi = ", xi
+        print("Current xi = ", xi)
         score, reg = Util.crossValidate(clf, trainX, trainY, \
                                         evalFunc, 5, "Regular", regs)
         if score < bestScore:
             bestScore, bestXi, bestReg = score, xi, reg
-    print "bestScore, bestXi, bestReg = ", bestScore, bestXi, bestReg
+    print("bestScore, bestXi, bestReg = ", bestScore, bestXi, bestReg)
     clf.setXi(bestXi)
     clf.setRegular(bestReg)
     clf.fit(trainX, trainY)

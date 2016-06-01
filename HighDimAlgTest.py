@@ -17,14 +17,14 @@ def main_random(fileName, clf, p=5, k=3, preproc=False, evalFunc = Util.brierSco
     hda = HighDimAlg(clf, "random", p, k)
     scoreList = []
     nRunning = 10
-    for _ in xrange(nRunning):
+    for _ in range(nRunning):
         trainX, trainY, testX, testY = Util.readData(data, False, preproc)
         hda.fit(trainX, trainY)
         s = evalFunc(hda.predict(testX), testY)
-        print "score = ", s
+        print("score = ", s)
         scoreList.append(s)
     score = sum(scoreList)/nRunning
-    print "mean score = ", score
+    print("mean score = ", score)
     with open("log/HDA_test_log_random.txt", 'a') as f:
         log = ','.join([dt.now().strftime("%Y/%m/%d %H:%M"), str(fileName), \
                         "GLS", str(p), str(k), \
@@ -36,14 +36,14 @@ def main_ordinal(fileName, clf, k=3, preproc=False, evalFunc = Util.brierScore):
     hda = HighDimAlg(clf, "ordinal", kTimes=k)
     scoreList = []
     nRunning = 10
-    for _ in xrange(nRunning):
+    for _ in range(nRunning):
         trainX, trainY, testX, testY = Util.readData(data, False, preproc)
         hda.fit(trainX, trainY)
         s = evalFunc(hda.predict(testX), testY)
-        print "score = ", s
+        print("score = ", s)
         scoreList.append(s)
     score = sum(scoreList)/nRunning
-    print "mean score = ", score
+    print("mean score = ", score)
     with open("log/HDA_test_log_ordinal.txt", 'a') as f:
         log = ','.join([dt.now().strftime("%Y/%m/%d %H:%M"), str(fileName), \
                         "GLS", str(k), \

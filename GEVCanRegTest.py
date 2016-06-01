@@ -20,12 +20,12 @@ def main_with_validation(fileName, preproc=False, evalFunc = Util.brierScore):
 
     for xi in xis:
         clf.setXi(xi)
-        print "Current xi = ", xi
+        print("Current xi = ", xi)
         score, reg = Util.crossValidate(clf, trainX, trainY, \
                                         evalFunc, 5, "Regular", regs)
         if score < bestScore:
             bestScore, bestXi, bestReg = score, xi, reg
-    print "bestScore, bestXi, bestReg = ", bestScore, bestXi, bestReg
+    print("bestScore, bestXi, bestReg = ", bestScore, bestXi, bestReg)
     clf.setXi(bestXi)
     clf.setRegular(bestReg)
     clf.fit(trainX, trainY)
@@ -44,14 +44,14 @@ def main_prob(fileName, reg, xi, preproc=False, evalFunc = Util.brierScore):
     clf.setXi(xi)
     k = 10
     
-    for _ in xrange(k):
+    for _ in range(k):
         trainX, trainY, testX, testY = Util.readData(data, preproc)
         clf.fit(trainX, trainY)
         s = evalFunc(clf.predict(testX), testY)
-        print "score = ", s
+        print("score = ", s)
         scoreList.append(s)
     score = sum(scoreList)/k
-    print "mean score = ", score
+    print("mean score = ", score)
     with open("log/GEV_test_log.txt", 'a') as f:
         log = ','.join([dt.now().strftime("%Y/%m/%d %H:%M"), str(fileName), \
                         str(preproc), evalFunc.__name__, str(score)])
@@ -65,13 +65,13 @@ def main_label(fileName, reg, xi, preproc=False, evalFunc = Util.f1):
     clf.setXi(xi)
     k = 10
     
-    for _ in xrange(k):
+    for _ in range(k):
         trainX, trainY, testX, testY = Util.readData(data, preproc)
         clf.fit(trainX, trainY)
         s = evalFunc(Util.probToLabel(clf.predict(testX)), testY)
-        print "score = ", s
+        print("score = ", s)
         scoreList.append(s)
-    print "mean score = ", sum(scoreList)/k
+    print("mean score = ", sum(scoreList)/k)
     
 if __name__ == "__main__":
     for name in ["vehicle", "german", "glass", "harberman", "pima", "letter-A"]:

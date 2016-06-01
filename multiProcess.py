@@ -12,7 +12,7 @@ import numpy as np
 from sklearn.datasets import fetch_mldata
 
 def worker(chosenNum):
-    print "Current chosen number: ", chosenNum
+    print("Current chosen number: ", chosenNum)
 #    global validateX, validateY, trainX, trainY, regs, xis, lock, clfs
     clf = GLS()
     hda = HighDimAlg(clf, "convolve")       
@@ -32,7 +32,7 @@ def worker(chosenNum):
                                         Util.brierScore, 2, "Regular", regs)
         if score < bestScore:
             bestScore, bestXi, bestReg = score, xi, reg
-    print "bestScore, bestXi, bestReg = ", bestScore, bestXi, bestReg    
+    print("bestScore, bestXi, bestReg = ", bestScore, bestXi, bestReg)
     hda.setXi(bestXi)
     hda.setRegular(bestReg)
     
@@ -67,27 +67,27 @@ trainX, trainY, validateX, validateY = train[:, 1:], train[:, 0], validate[:, 1:
 lock = threading.Lock()
 threads = []
 
-print "begin threading"
+print("begin threading")
 t0 = time.time()
-for num in xrange(10):
+for num in range(10):
     t = threading.Thread(target=worker, args=(num,))
     threads.append(t)
     t.start()
 for t in threads:
     t.join()
 t1 = time.time()
-print "Total time: " + str(t1-t0) + "sec"
+print("Total time: " + str(t1-t0) + "sec")
 
 import cPickle as pickle
 with open("log/hda_scaled01_mnist_list.txt", "wb") as f:
     pickle.dump(clfs, f)
 #with open("log/hda_mnist_list.txt", "rb") as f:
 #    clfs = pickle.load(f)
-print clfs
+print(clfs)
 forTest = []
 for clf in clfs:
     forTest.append((clf['num'], clf['clf']))
 forTest = [x[1] for x in sorted(forTest, key=lambda x: x[0])]
 testX, testY = test[:, 1:], test[:, 0]
 predY = Util.oneVsAll(testX, forTest)
-print "accuracy = ", Util.accuracy(predY, testY)
+print("accuracy = ", Util.accuracy(predY, testY))

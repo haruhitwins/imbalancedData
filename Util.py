@@ -16,6 +16,10 @@ from sklearn.metrics import roc_auc_score
 from sklearn.metrics import accuracy_score
 from sklearn.metrics import matthews_corrcoef
 from sklearn.metrics import confusion_matrix
+from sklearn.metrics import log_loss
+
+def logLoss(predictY, trueY):
+    return log_loss(trueY, predictY)
 
 def brierScore(predictY, trueY):
 #    y = trueY.copy()
@@ -30,10 +34,11 @@ def stratifiedBrierScore(predictY, trueY):
     return np.square(predictY[pos] - y[pos]).mean(), np.square(predictY[neg] - y[neg]).mean()
     
 def calibrationLoss(predictY, trueY):
+    predictY = predictY.flatten()
     y = trueY.copy()
     y[y != 1] = 0
     res = np.zeros(len(predictY))
-    for i in xrange(10):
+    for i in range(10):
         bins = np.logical_and(i/10. < predictY, predictY <= (i+1)/10.)
         res[bins] = y[bins].sum() / float(bins.sum())
     return np.square(predictY - res).mean()
@@ -93,7 +98,8 @@ def crossValidate(classifier, X, Y, evalFunc, k, name, params):
 #                predictY = probToLabel(predictY)
             try:
                 scores.append(evalFunc(predictY, Y[test_id]))
-            except:
+            except Exception as e:
+                print(e.message)
                 continue
         score = np.array(scores).mean()
         if score < bestScore:
@@ -153,4 +159,4 @@ def oneVsAll(X, clfs):
 
        
 if __name__ == "__main__":
-    print "This is Util module."
+    print("This is Util module.")

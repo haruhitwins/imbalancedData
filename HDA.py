@@ -69,7 +69,7 @@ class HighDimAlg(object):
             assert d >= self.p, \
             "patchSize is too large. Only %d features available but given %d" \
             % (d, self.p)
-            for _ in xrange(self.k):
+            for _ in range(self.k):
                 selected = np.array([False] * d)
                 selected[:self.p] = True
                 np.random.shuffle(selected)
@@ -77,7 +77,7 @@ class HighDimAlg(object):
         elif self.scheme == "ordinal":
             assert d >= self.k * 2, "Partition number k is too large."
             ps = d/self.k
-            for i in xrange(self.k-1):
+            for i in range(self.k-1):
                 selected = np.array([False] * d)
                 selected[i * ps : (i+1) * ps] = True
                 self.features.append(selected)
@@ -115,7 +115,7 @@ class HighDimAlg(object):
                 predictY += self.clf.predict(trainX)
         else:
             self.generateFeatures(X)
-            for i in xrange(self.k):
+            for i in range(self.k):
                 trainX = X[:, self.features[i]]
                 self.clf.fit(trainX, Y - predictY)
                 self.betas.append(self.clf.getBeta())
@@ -130,7 +130,7 @@ class HighDimAlg(object):
                 self.clf.setBeta(self.betas[i])
                 predictY += self.clf.predict(testX)            
         else:
-            for i in xrange(self.k):
+            for i in range(self.k):
                 testX = X[:, self.features[i]]
                 self.clf.setBeta(self.betas[i])
                 predictY += self.clf.predict(testX)            
@@ -149,18 +149,18 @@ if __name__ == "__main__":
     bestScore, bestXi, bestReg = 1e10, None, None        
     for xi in xis:
         hda.setXi(xi)
-        print "Current xi = ", xi
+        print("Current xi = ", xi)
         t0 = time.time()
         score, reg = Util.crossValidate(hda, trainX, trainY, \
                                         Util.brierScore, 5, "Regular", regs)
         t1 = time.time()
-        print "CV interval: " + str(t1-t0) + "sec"
+        print("CV interval: " + str(t1-t0) + "sec")
         if score < bestScore:
             bestScore, bestXi, bestReg = score, xi, reg
-    print "bestScore, bestXi, bestReg = ", bestScore, bestXi, bestReg
+    print("bestScore, bestXi, bestReg = ", bestScore, bestXi, bestReg)
     hda.setXi(bestXi)
     hda.setRegular(bestReg)
     
     trainX, trainY, testX, testY = Util.readData(data, intercept=False)
     hda.fit(trainX, trainY)
-    print Util.brierScore(hda.predict(testX), testY)
+    print(Util.brierScore(hda.predict(testX), testY))

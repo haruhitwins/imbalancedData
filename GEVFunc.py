@@ -61,6 +61,47 @@ def derivInverseLink(xi, v):
 
 def clip(xi, v):
     if xi > 0:
-        v[v < -1./xi] = -1./xi + 1e-8
+        v[v <= -1./xi] = -1./xi + 1e-8
     elif xi < 0:
-        v[v > -1./xi] = -1./xi - 1e-8
+        v[v >= -1./xi] = -1./xi - 1e-8
+        
+if __name__ == '__main__':
+    import matplotlib.pyplot as plt
+    plt.figure(figsize=(8, 3))
+    x = np.arange(-2, 2, 0.05)
+    y0 = [GEV(0., v) for v in x]
+    y1 = [GEV(0.5, v) for v in x]
+    y2 = [GEV(-0.5, v) for v in x]
+    
+    plt.subplot(121)
+    plt.title("Cumulative distribution function")
+    plt.xlim(xmax=2)
+    plt.xticks([-2,-1,0,1,2])
+    l1, l2, l3 = plt.plot(x, y0, x, y1, x, y2)
+    plt.setp(l1, c='r', ls='dotted', lw=2.0)
+    plt.setp(l2, c='b', ls='--', lw=2.0)
+    plt.setp(l3, c='g', ls='-.', lw=2.0)
+    plt.grid(True)
+    plt.legend([l3,l1,l2],[r'$\xi = -0.5$',r'$\xi = 0$',r'$\xi = 0.5$'],loc='upper left')
+#    plt.savefig("F:/myPaper/pdf/cdf.pdf")
+#    plt.show()
+    
+    x0 = np.arange(-3, 3, 0.05)
+    x1 = np.arange(-2, 3, 0.05)
+    x2 = np.arange(-3, 2, 0.05)
+    y0 = [derivInverseLink(0., v) for v in x0]
+    y1 = [derivInverseLink(0.5, v) for v in x1]
+    y2 = [derivInverseLink(-0.5, v) for v in x2]
+    
+    plt.subplot(122)
+    plt.title("Probability density function")
+    plt.ylim(ymax=0.45)
+    plt.yticks([0.05,0.15,0.25,0.35,0.45])
+    l1, l2, l3 = plt.plot(x0, y0, x1, y1, x2, y2)
+    plt.setp(l1, c='r', ls='dotted', lw=2.0)
+    plt.setp(l2, c='b', ls='--', lw=2.0)
+    plt.setp(l3, c='g', ls='-.', lw=2.0)
+    plt.grid(True)
+#    plt.legend([l3,l1,l2],[r'$\xi = -0.5$',r'$\xi = 0$',r'$\xi = 0.5$'],loc='upper left')
+    plt.savefig("F:/myPaper/pdf/cdfpdf.pdf", bbox_inches='tight')
+    plt.show()
