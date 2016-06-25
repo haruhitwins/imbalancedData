@@ -8,11 +8,12 @@ Created on Thu Oct 29 14:47:26 2015
 import numpy as np
 
 def logGEV(xi, v):
-    assert (1+v*xi >= 0).all(), "logGEV input error."
+    x = 1. + v * xi
+    assert (x >= 0).all(), "logGEV input error."
     if xi == 0:
         res = -np.exp(-v)
     else:
-        res = -np.power(1+v*xi, -1./xi)
+        res = -np.power(x, -1./xi)
     return res
 
 def link(xi, eta):
@@ -22,11 +23,12 @@ def link(xi, eta):
     return (1./np.power(-np.log(eta), xi) - 1) / xi
 
 def inverseLink(xi, v):
-    assert (1+v*xi >= 0).all(), "inverseLink input error."
+    x = 1. + v * xi
+    assert (x >= 0).all(), "inverseLink input error."
     if xi == 0:
         res = np.exp(-np.exp(-v))
     else:
-        res = np.exp(-np.power(1+v*xi, -1./xi))
+        res = np.exp(-np.power(x, -1./xi))
     return res
 
 def GEV(xi, v):
@@ -56,8 +58,9 @@ def derivInverseLink(xi, v):
     if xi == 0:
         return np.exp(-np.exp(-v) - v)
     else:
-        return np.exp(-np.power((1+v*xi), -1./xi)) \
-               * np.power(1+v*xi, -1./xi - 1)
+        x = 1. + v * xi
+        a = np.power(x, -1./xi)
+        return np.exp(-a) * a / x
 
 def clip(xi, v):
     if xi > 0:
@@ -103,5 +106,5 @@ if __name__ == '__main__':
     plt.setp(l3, c='g', ls='-.', lw=2.0)
     plt.grid(True)
 #    plt.legend([l3,l1,l2],[r'$\xi = -0.5$',r'$\xi = 0$',r'$\xi = 0.5$'],loc='upper left')
-    plt.savefig("F:/myPaper/pdf/cdfpdf.pdf", bbox_inches='tight')
+#    plt.savefig("F:/myPaper/pdf/cdfpdf.pdf", bbox_inches='tight')
     plt.show()

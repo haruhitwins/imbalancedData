@@ -73,7 +73,7 @@ class MAPGEV(object):
         self.xi = 0.1
         xis = [self.xi]
         bs = [self.beta[-1]]
-        for i in xrange(self.iterations):
+        for i in range(self.iterations):
             secdev = self.betaSecDeriva(X, Y, self.beta, self.xi)
             try:
                 deltaBeta = np.linalg.pinv(secdev).dot(self.betaDeriva(X, Y, self.beta, self.xi))
@@ -129,4 +129,4 @@ if __name__ == "__main__":
     plt.show()       
     
     predY = estimator.predict(testX)
-    print "b = %f b1 = %f b0 = %f c = %f a = %f r = %f p = %f f = %f m = %f g = %f" % Util.evaluate(predY, testY)
+    print("b = %f b1 = %f b0 = %f c = %f a = %f r = %f p = %f f = %f m = %f g = %f" % Util.evaluate(predY, testY))
